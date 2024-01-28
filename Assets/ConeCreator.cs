@@ -8,7 +8,7 @@ public class ConeCreator : MonoBehaviour
 {
     public float radius = 1.0f;
     public float height = 1.0f;
-    public int polygon = 3;
+    public int polygon = 20;
 
     Mesh mesh;
     MeshCollider meshCollider;
@@ -31,6 +31,7 @@ public class ConeCreator : MonoBehaviour
     {
         mesh = GetComponent<MeshFilter>().mesh;
         meshCollider = GetComponent<MeshCollider>();
+        polygon = 20;
 
         SetMeshData(radius, polygon);
         CreateProceduralMesh();

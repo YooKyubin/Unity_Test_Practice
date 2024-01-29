@@ -12,19 +12,24 @@ public class MoveManager : MonoBehaviour
     public float neighborRange = 20.0f;
     public float speed = 1.0f;
 
-    const int number = 100;
+
+    const int number = 200;
     GameObject[] objects = new GameObject[number];
+    LayerMask boidMask;
 
 
     // Start is called before the first frame update
     void Start()
     {
+        boidMask = LayerMask.GetMask("Boid");
+
         for (int i=0; i<number; ++i)
         {
             GameObject parent = new GameObject();
             parent.name = "obj".Insert( 3, i.ToString() );
             parent.transform.parent = this.transform;
-            objects[i] = parent; 
+            parent.layer = LayerMask.NameToLayer("Boid");
+            objects[i] = parent;
 
             GameObject temp = MonoBehaviour.Instantiate(prefab);
             temp.transform.rotation = Quaternion.FromToRotation(Vector3.up, Vector3.forward);
@@ -32,8 +37,6 @@ public class MoveManager : MonoBehaviour
             temp.transform.parent = parent.transform;
 
             objects[i].transform.SetPositionAndRotation(Random.insideUnitSphere * 10 + this.transform.position, Random.rotationUniform );
-            // * temp.transform.rotation;
-
             //objects[i].transform.localPosition = Random.insideUnitSphere;
             //objects[i].transform.localRotation = Random.rotationUniform;
         }
@@ -64,39 +67,26 @@ public class MoveManager : MonoBehaviour
 
             }
 
+            //Collider[] neighborColls = Physics.OverlapSphere(cur.transform.position, neighborRange, boidUnitLayer);
+
+
             Vector3 direction = Vector3.zero;
             direction += GetSeperation(i, seperationNeighbor);
             direction += GetCohesion(i, neighbors);
             direction += GetAlignment(i, neighbors);
 
-
+            if ((this.transform.position - cur.transform.position).magnitude > 20)
+                direction += this.transform.position - cur.transform.position;
 
             direction = Vector3.Lerp(cur.transform.forward, direction, Time.deltaTime);
             direction.Normalize();
-            Vector3 curPos = cur.transform.localPosition;
-            if (cur.transform.localPosition.y < -14 || cur.transform.localPosition.y >= 14)
-                curPos.y = -curPos.y;
-
-            if (cur.transform.position.x < -24 || cur.transform.position.x >= 24)
-                curPos.x = -curPos.x;
-
-            if (cur.transform.position.z < -24 || cur.transform.position.z >= 24)
-                curPos.z = -curPos.z;
             
-            cur.transform.localPosition = curPos;
-            //if (cur.transform.position.y < 0 || cur.transform.position.y >= 30)
-            //    direction.y = -direction.y;
-
-            //if (cur.transform.position.x < -24 || cur.transform.position.x >= 24)
-            //    direction.x = -direction.x;
-
-            //if (cur.transform.position.z < -24 || cur.transform.position.z >= 24)
-            //    direction.z = -direction.z;
 
             cur.transform.rotation = Quaternion.FromToRotation(Vector3.forward, direction);
             cur.transform.position += cur.transform.forward * Time.deltaTime * speed;
         }
     }
+
     Vector3 GetSeperation(int cur, List<int> around)
     {
         if (around == null || around.Count == 0)
@@ -139,7 +129,6 @@ public class MoveManager : MonoBehaviour
         {
             vec += objects[i].transform.forward;
         }
-        vec /= around.Count;
 
         return vec.normalized * alignmentWeight;
     }

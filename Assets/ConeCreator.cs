@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using UnityEngine;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
+[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class ConeCreator : MonoBehaviour
 {
     public float radius = 1.0f;
@@ -11,7 +11,6 @@ public class ConeCreator : MonoBehaviour
     public int polygon = 20;
 
     Mesh mesh;
-    MeshCollider meshCollider;
     Vector3[] vertices;
     int[] triangles;
 
@@ -30,7 +29,6 @@ public class ConeCreator : MonoBehaviour
     void Start()
     {
         mesh = GetComponent<MeshFilter>().mesh;
-        meshCollider = GetComponent<MeshCollider>();
         polygon = 20;
 
         SetMeshData(radius, polygon);
@@ -93,7 +91,5 @@ public class ConeCreator : MonoBehaviour
         mesh.vertices = vertices;
         mesh.triangles = triangles;
         mesh.RecalculateNormals();
-
-        meshCollider.sharedMesh = mesh;
     }
 }

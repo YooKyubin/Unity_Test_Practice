@@ -8,9 +8,12 @@ using UnityEngine.UIElements;
 public class ObstacleAvoidanceTest : MonoBehaviour
 {
     public float distance;
-    private const int numPoints = 30;
     public float angle;
     public float speed;
+    public float rayRadius;
+    public float turnSpeed;
+
+    private const int numPoints = 30;
     [SerializeField]
     LayerMask obstacleLayer;
     Transform detectPos;
@@ -18,9 +21,14 @@ public class ObstacleAvoidanceTest : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        float total = 
+        speed = Random.Range(1.5f, 3.0f);
+        distance = Random.Range(3.0f, 7.0f);
+        rayRadius = Random.Range(0.4f, 1.0f);
+        turnSpeed = Random.Range(1f, 10f);
+
         dirs = new Vector3[numPoints];
-        distance = 7.0f;
-        //numPoints = 30;
+
         angle = Mathf.PI * 0.75f;
 
         obstacleLayer = LayerMask.GetMask("Obstacle");
@@ -49,7 +57,7 @@ public class ObstacleAvoidanceTest : MonoBehaviour
             Vector3 dir = transform.localRotation * dirs[i]; // dir을 로컬 좌표계로 변환하기 위함
             //Vector3 dir = transform.TransformDirection(dirs[i]);
 
-            if (Physics.SphereCast(detectPos.position, 0.5f, dir, out hit, this.distance, obstacleLayer))
+            if (Physics.SphereCast(detectPos.position, rayRadius, dir, out hit, this.distance, obstacleLayer))
             {
                 color = UnityEngine.Color.red;
                 if (hit.distance > maxDist)
@@ -71,7 +79,7 @@ public class ObstacleAvoidanceTest : MonoBehaviour
         Debug.DrawLine(detectPos.position, detectPos.position + moveDir * distance, UnityEngine.Color.green);
         //Debug.Log(dirs[2]); // 매 update 마다 localRoation 적용 이전의 dir 을 구할 필요가 없음
 
-        moveDir = Vector3.Lerp(this.transform.forward, moveDir, Time.deltaTime * 5);
+        moveDir = Vector3.Lerp(this.transform.forward, moveDir, Time.deltaTime * turnSpeed);
         moveDir.Normalize();
 
         MoveFoward(moveDir);

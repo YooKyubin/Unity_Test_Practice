@@ -4,6 +4,7 @@ Shader "Unlit/PlotPointTest"
     {
         _Color ("Color", Color) = (1,1,1,1)
         _Scale ("Sclae", Range(0.001, 10)) = 0.005
+        _Radius ("Radius", Range(0.1, 100)) = 100
     }
     SubShader
     {
@@ -26,18 +27,19 @@ Shader "Unlit/PlotPointTest"
 
             struct v2g
             {
-                float4 pos : SV_POSITION;
-                float pointSize : PSIZE;
+                float4 pos : POSITION;
             };
 
             struct g2f
             {
                 float4 position : SV_POSITION;
-                float pointSize : PSIZE;
+                // float4 center : CENTER;
+                float2 uv : TEXCOORD;
             };
 
             fixed4 _Color;
             float _Scale;
+            float _Radius;
 
             v2g vert (appdata v)
             {
@@ -49,9 +51,7 @@ Shader "Unlit/PlotPointTest"
                 float4 positionVS = mul(UNITY_MATRIX_V, positionWS);
                 // float4 positionCS = mul(UNITY_MATRIX_P, positionVS);
 
-                // o.pointSize = _Scale * (300.0 / -positionVS.z);
                 o.pos = positionVS;
-                o.pointSize = 10.0;
                 return o;
             }
 
@@ -65,8 +65,6 @@ Shader "Unlit/PlotPointTest"
 
                 v2g vtx = input[0];
 
-                // float scale = _Scale * (300 / -vtx.pos.z);
-                // float scale = 0.5f;
                 float scale = _Scale;
 
                 // View Space
@@ -81,6 +79,16 @@ Shader "Unlit/PlotPointTest"
                 output[2].position = mul(UNITY_MATRIX_P, output[2].position);
                 output[3].position = mul(UNITY_MATRIX_P, output[3].position);
 
+                // output[0].center = mul(UNITY_MATRIX_P, vtx.pos);
+                // output[1].center = mul(UNITY_MATRIX_P, vtx.pos);
+                // output[2].center = mul(UNITY_MATRIX_P, vtx.pos);
+                // output[3].center = mul(UNITY_MATRIX_P, vtx.pos);
+
+                output[0].uv = float2(0.f, 0.f);
+                output[1].uv = float2(1.f, 0.f);
+                output[2].uv = float2(1.f, 1.f);
+                output[3].uv = float2(0.f, 1.f);
+
                 outputStream.Append(output[0]);
                 outputStream.Append(output[1]);
                 outputStream.Append(output[2]);
@@ -90,14 +98,24 @@ Shader "Unlit/PlotPointTest"
                 outputStream.Append(output[2]);
                 outputStream.Append(output[3]);
                 outputStream.RestartStrip();
-
             }
 
-            fixed4 frag (g2f i) : SV_Target
+            fixed4 frag (g2f input) : SV_Target
             {
-                float4 col = _Color;    
+                // float4 center = input.center;
+                // center.y = -center.y; // ncd 좌표계가 위에서 아래 방향으로 -1 ~ 1 이기 때문에 screen space와 다르다. 이걸 이제 알았다.
+                // float2 ndcCenter = center / center.w;
+                // float2 screen = (ndcCenter + 1.0f) * _ScreenParams / 2;
 
-                return col;
+                // float scaledRadius = 2 * _Scale / center.w;
+                // if (length(input.position - screen) > scaledRadius)
+                //     discard;
+
+                if ( length(input.uv - float2(0.5f, 0.5f)) > 0.5 )
+                    discard;
+
+
+                return _Color;
             }
             ENDCG
         }

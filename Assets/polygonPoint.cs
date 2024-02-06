@@ -9,14 +9,14 @@ public class polygonPoint : MonoBehaviour
     public float turnFraction;
     Mesh mesh;
     Vector3[] vertices;
-    int[] triangles;
+    int[] indices;
 
     private void OnValidate()
     {
         if (mesh == null)
             return;
 
-        if (size > 0 && numPoints >= 3)
+        if (size > 0 && numPoints >= 1)
         {
             SetMeshData(size, numPoints);
             CreateProceduralMeshPoint();
@@ -36,9 +36,15 @@ public class polygonPoint : MonoBehaviour
     {
         vertices = new Vector3[numPoints];
 
-        for (int i = 0; i < numPoints; i++)
+        for (int i=0; i<numPoints; ++i)
         {
-            float t = i / (numPoints - 1.0f);
+            float t;
+
+            if (numPoints != 1)
+                t = i / (numPoints - 1.0f);
+            else
+                t = 0;
+
             float inclination = Mathf.Acos(1 - 2 * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
             float azimuth = 2 * Mathf.PI * i * turnFraction; // 방위각
 
@@ -46,32 +52,20 @@ public class polygonPoint : MonoBehaviour
             float y = size * Mathf.Sin(inclination) * Mathf.Sin(azimuth);
             float z = size * Mathf.Cos(inclination);
 
-            //Vector3 pos = transform.TransformPoint(new Vector3(x, y, z));
-            Vector3 pos = new Vector3(x, y, z);
-
-            vertices[i] = pos;
+            vertices[i] = new Vector3(x, y, z);
         }
 
-        triangles = new int[3 * numPoints];
-        for (int i = 0; i < numPoints - 2; ++i)
+        indices = new int[numPoints];
+        for (int i = 0; i < numPoints; ++i)
         {
-            triangles[i * 3] = 0;
-            triangles[i * 3 + 1] = i + 1;
-            triangles[i * 3 + 2] = i + 2;
+            indices[i] = i;
         }
-
-        triangles[3 * numPoints - 3] = 0;
-        triangles[3 * numPoints - 2] = numPoints-1;
-        triangles[3 * numPoints - 1] = 1;
     }
 
     void CreateProceduralMeshPoint()
     {
         mesh.Clear();
         mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.RecalculateNormals();
-
-        mesh.SetIndices(mesh.GetIndices(0), MeshTopology.Points, 0);
+        mesh.SetIndices(indices, MeshTopology.Points, 0);
     }
 }

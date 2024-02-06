@@ -1,11 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Runtime.ConstrainedExecution;
 using UnityEngine;
-using UnityEngine.UIElements;
 
-public class ObstacleAvoidanceTest : MonoBehaviour
+public class ObstacleAvoidanceTest3D : MonoBehaviour
 {
     public float distance;
     public float angle;
@@ -13,10 +10,10 @@ public class ObstacleAvoidanceTest : MonoBehaviour
     public float rayRadius;
     public float turnSpeed;
 
-    private const int numPoints = 30;
+    private const int numPoints = 100;
     [SerializeField]
     LayerMask obstacleLayer;
-    Transform detectPos;
+    Transform detectTransform;
     Vector3[] dirs;
     // Start is called before the first frame update
     void Start()
@@ -24,39 +21,52 @@ public class ObstacleAvoidanceTest : MonoBehaviour
         speed = Random.Range(2.5f, 5.0f);
         distance = Random.Range(3.0f, 7.0f);
         rayRadius = Random.Range(0.4f, 1.0f);
-        turnSpeed = Random.Range(3f, 10f);
+        turnSpeed = Random.Range(15f, 25f);
 
         dirs = new Vector3[numPoints];
 
-        angle = 125f;
+        angle = 135f;
 
         obstacleLayer = LayerMask.GetMask("Obstacle");
         this.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = new UnityEngine.Color(Random.value, Random.value, Random.value);
-        detectPos = this.transform.GetChild(0).transform;
+        detectTransform = this.transform.GetChild(0).transform;
+
 
         for (int i=0; i<numPoints; i++)
         {
-            float theta = angle / 180f * Mathf.PI * i / (numPoints - 1f);
-            float z = Mathf.Cos(theta);
-            float x = Mathf.Sin(theta) * Mathf.Pow(-1, i % 2);
-            Vector3 dir = new Vector3(x, 0, z);
-            dirs[i] = dir;
+            float t = i / (numPoints - 1.0f);
+            float inclination = Mathf.Acos(1 - 2 * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
+            float azimuth = 2 * Mathf.PI * i * 1.618f; // 방위각
+
+            float x = Mathf.Sin(inclination) * Mathf.Cos(azimuth);
+            float y = Mathf.Sin(inclination) * Mathf.Sin(azimuth);
+            float z = Mathf.Cos(inclination);
+
+            dirs[i] = new Vector3(x, y, z);
         }
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        Vector3 detectPos = detectTransform.position;
         Vector3 moveDir = this.transform.forward;
         RaycastHit hit;
         float maxDist = 0f;
-        for (int i=0; i<numPoints; i++)
+        for (int i = 0; i < numPoints; i++)
         {
             UnityEngine.Color color = UnityEngine.Color.green;
-            Vector3 dir = transform.localRotation * dirs[i]; // dir을 로컬 좌표계로 변환하기 위함
-            //Vector3 dir = transform.TransformDirection(dirs[i]);
+            // Vector3 dir = transform.localRotation * dirs[i]; // dir을 로컬 좌표계로 변환하기 위함
+            Vector3 dir = transform.TransformDirection(dirs[i]);
 
-            if (Physics.SphereCast(detectPos.position, rayRadius, dir, out hit, this.distance, obstacleLayer))
+            if (Vector3.Angle(this.transform.forward, dir) > angle)
+            {
+                Debug.Log(Vector3.Angle(this.transform.forward, dir));
+                break;
+            }
+
+            if (Physics.SphereCast(detectPos, rayRadius, dir, out hit, this.distance, obstacleLayer))
             {
                 color = UnityEngine.Color.red;
                 if (hit.distance > maxDist)
@@ -71,21 +81,17 @@ public class ObstacleAvoidanceTest : MonoBehaviour
                 break;
             }
 
+            Debug.DrawLine(detectPos, detectPos + dir * distance, color);
 
-            Debug.DrawLine(detectPos.position, detectPos.position + dir * distance, color);
         }
 
-        Debug.DrawLine(detectPos.position, detectPos.position + moveDir * distance, UnityEngine.Color.green);
-        //Debug.Log(dirs[2]); // 매 update 마다 localRoation 적용 이전의 dir 을 구할 필요가 없음
+        Debug.DrawLine(detectPos, detectPos + moveDir * distance, UnityEngine.Color.green);
 
         moveDir = Vector3.Lerp(this.transform.forward, moveDir, Time.deltaTime * turnSpeed);
         moveDir.Normalize();
 
         MoveFoward(moveDir);
-        
-        // 속도, 광선 길이, sphere cast의 반지름, lerp 속도 등으로 다양하게 회전 구현 가능
     }
-
 
     void MoveFoward(Vector3 direction)
     {

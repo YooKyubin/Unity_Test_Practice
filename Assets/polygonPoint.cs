@@ -38,12 +38,7 @@ public class polygonPoint : MonoBehaviour
 
         for (int i=0; i<numPoints; ++i)
         {
-            float t;
-
-            if (numPoints != 1)
-                t = i / (numPoints - 1.0f);
-            else
-                t = 0;
+            float t = numPoints == 1 ? 0 : i / (numPoints - 1f);
 
             float inclination = Mathf.Acos(1 - 2 * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
             float azimuth = 2 * Mathf.PI * i * turnFraction; // 방위각
@@ -66,6 +61,7 @@ public class polygonPoint : MonoBehaviour
     {
         mesh.Clear();
         mesh.vertices = vertices;
+        // mesh.triangles = indices; // mesh.triagles의 배열 길이는 vertices.Length * 3 이어야 한다.
         mesh.SetIndices(indices, MeshTopology.Points, 0);
     }
 }

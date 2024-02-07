@@ -7,6 +7,7 @@ public class polygonPoint : MonoBehaviour
     public float size = 1.0f;
     public int numPoints = 3;
     public float turnFraction;
+    public float angle = 180f;
     Mesh mesh;
     Vector3[] vertices;
     int[] indices;
@@ -36,11 +37,12 @@ public class polygonPoint : MonoBehaviour
     {
         vertices = new Vector3[numPoints];
 
+        float thetaRange = Mathf.Cos(angle * Mathf.Deg2Rad);
         for (int i=0; i<numPoints; ++i)
         {
             float t = numPoints == 1 ? 0 : i / (numPoints - 1f);
 
-            float inclination = Mathf.Acos(1 - 2 * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
+            float inclination = Mathf.Acos(1 - (1 - thetaRange) * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
             float azimuth = 2 * Mathf.PI * i * turnFraction; // 방위각
 
             float x = size * Mathf.Sin(inclination) * Mathf.Cos(azimuth);

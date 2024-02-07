@@ -7,6 +7,7 @@ public class DirectionCreator : MonoBehaviour
     public int numPoints;
     public float turnFraction = 1.618f;
     public Mesh Mesh;
+    public float angle;
     // Start is called before the first frame update
     void Start()
     {
@@ -39,10 +40,13 @@ public class DirectionCreator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        float thetaRange = Mathf.Cos(Mathf.Deg2Rad * angle);
+
         for (int i = 0; i < numPoints; i++)
         {
             float t = i / (numPoints - 1.0f);
-            float inclination = Mathf.Acos(1 - 2 * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
+            
+            float inclination = Mathf.Acos(1 - (1 - thetaRange) * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
             float azimuth = 2 * Mathf.PI * i * turnFraction; // 방위각
             //float azimuth = t * Mathf.PI * 2;
 

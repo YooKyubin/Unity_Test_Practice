@@ -10,7 +10,7 @@ public class ObstacleAvoidanceTest3D : MonoBehaviour
     public float rayRadius;
     public float turnSpeed;
 
-    private const int numPoints = 100;
+    private const int numPoints = 300;
     [SerializeField]
     LayerMask obstacleLayer;
     Transform detectTransform;
@@ -31,11 +31,11 @@ public class ObstacleAvoidanceTest3D : MonoBehaviour
         this.transform.GetChild(1).GetComponent<MeshRenderer>().material.color = new UnityEngine.Color(Random.value, Random.value, Random.value);
         detectTransform = this.transform.GetChild(0).transform;
 
-
+        float thetaRange = Mathf.Cos(Mathf.Deg2Rad * angle);
         for (int i=0; i<numPoints; i++)
         {
             float t = i / (numPoints - 1.0f);
-            float inclination = Mathf.Acos(1 - 2 * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
+            float inclination = Mathf.Acos(1 - (1 - thetaRange) * t); // 1 - 2*t는 arccos 정의역(1 ~ -1), inclination => (0 ~ pi), 감소함수
             float azimuth = 2 * Mathf.PI * i * 1.618f; // 방위각
 
             float x = Mathf.Sin(inclination) * Mathf.Cos(azimuth);
@@ -59,12 +59,6 @@ public class ObstacleAvoidanceTest3D : MonoBehaviour
             UnityEngine.Color color = UnityEngine.Color.green;
             // Vector3 dir = transform.localRotation * dirs[i]; // dir을 로컬 좌표계로 변환하기 위함
             Vector3 dir = transform.TransformDirection(dirs[i]);
-
-            if (Vector3.Angle(this.transform.forward, dir) > angle)
-            {
-                Debug.Log(Vector3.Angle(this.transform.forward, dir));
-                break;
-            }
 
             if (Physics.SphereCast(detectPos, rayRadius, dir, out hit, this.distance, obstacleLayer))
             {

@@ -2,27 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class polygonPoint : MonoBehaviour
+public class Plotter : MonoBehaviour
 {
     public float size = 1.0f;
     public int numPoints = 3;
-    public float turnFraction;
+    public float turnFraction = 0.98f;
     public float angle = 180f;
     Mesh mesh;
     Vector3[] vertices;
     int[] indices;
+    float timeElips;
 
-    private void OnValidate()
-    {
-        if (mesh == null)
-            return;
 
-        if (size > 0 && numPoints >= 1)
-        {
-            SetMeshData(size, numPoints);
-            CreateProceduralMeshPoint();
-        }
-    }
     // Start is called before the first frame update
     void Start()
     {
@@ -30,15 +21,26 @@ public class polygonPoint : MonoBehaviour
 
         SetMeshData(size, numPoints);
         CreateProceduralMeshPoint();
+        timeElips = 0;
     }
 
+    void Update()
+    {
+        timeElips += Time.deltaTime;
+        float t = timeElips * (2 * Mathf.PI) / 4;
+        numPoints = (int)((Mathf.Sin(t) / 2 + 0.5f) * 150);
+
+        SetMeshData(size, numPoints);
+        CreateProceduralMeshPoint();
+
+    }
 
     void SetMeshData(float size, int numPoints)
     {
         vertices = new Vector3[numPoints];
 
         float thetaRange = Mathf.Cos(angle * Mathf.Deg2Rad);
-        for (int i=0; i<numPoints; ++i)
+        for (int i = 0; i < numPoints; ++i)
         {
             float t = numPoints == 1 ? 0 : i / (numPoints - 1f);
 

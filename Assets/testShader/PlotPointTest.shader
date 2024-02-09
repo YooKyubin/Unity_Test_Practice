@@ -55,7 +55,7 @@ Shader "Unlit/PlotPointTest"
                 return o;
             }
 
-            [maxvertexcount(6)]
+            [maxvertexcount(6)] // 4·Î ¹Ù²Ù¸é ¾îÄÉµÊ? ¾ÈµÊ »ï°¢Çü ÇÏ³ª¸¸ ·»´õ¸µµÊ
             void geom (point v2g input[1], inout TriangleStream<g2f> outputStream)
             {
                 g2f output[4] = 
